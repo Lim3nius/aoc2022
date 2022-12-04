@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	cmn "github.com/Lim3nius/aoc2022/common"
@@ -71,10 +70,7 @@ func ensureResult(op string, wantRes uint) uint {
 }
 
 func main() {
-	data := string(cmn.Must(os.ReadFile("input.txt")))
-	if data[len(data)-1] == '\n' {
-		data = data[:len(data)-1]
-	}
+	data := cmn.ReadFile("input.txt")
 
 	score := uint(0)
 	score2 := uint(0)

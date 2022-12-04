@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -20,11 +19,7 @@ func (e *elf) String() string {
 }
 
 func main() {
-	b := cmn.Must(os.ReadFile("input.txt"))
-	data := string(b)
-	if data[len(data)-1] == '\n' {
-		data = data[:len(data)-1]
-	}
+	data := cmn.ReadFile("input.txt")
 	elv := []*elf{}
 	maxElvIdx := 0
 
