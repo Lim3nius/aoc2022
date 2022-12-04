@@ -6,15 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	cmn "github.com/Lim3nius/aoc2022/common"
 	"golang.org/x/exp/slices"
 )
-
-func must[T any](t T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-	return t
-}
 
 type elf struct {
 	calories []uint
@@ -26,7 +20,7 @@ func (e *elf) String() string {
 }
 
 func main() {
-	b := must(os.ReadFile("input.txt"))
+	b := cmn.Must(os.ReadFile("input.txt"))
 	data := string(b)
 	if data[len(data)-1] == '\n' {
 		data = data[:len(data)-1]
@@ -37,7 +31,7 @@ func main() {
 	for _, elves := range strings.Split(data, "\n\n") {
 		e := &elf{}
 		for _, cals := range strings.Split(elves, "\n") {
-			c := must(strconv.ParseUint(cals, 10, 32))
+			c := cmn.Must(strconv.ParseUint(cals, 10, 32))
 			e.calories = append(e.calories, uint(c))
 			e.calSum += uint(c)
 		}
