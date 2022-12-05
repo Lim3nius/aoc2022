@@ -16,7 +16,7 @@ func readCol(col int, ln string) string {
 	return string(ln[letPos])
 }
 
-func printStacks[T any](sts []Stack[T]) {
+func printStacks[T any](sts []cmn.Stack[T]) {
 	f := func(arr []T) []string {
 		res := []string{}
 		for _, e := range arr {
@@ -30,32 +30,14 @@ func printStacks[T any](sts []Stack[T]) {
 	fmt.Println()
 }
 
-type Stack[T any] []T
-
-func (s *Stack[T]) Pop() T {
-	v := (*s)[len(*s)-1]
-	*s = (*s)[:len(*s)-1]
-	return v
-}
-
-func (s *Stack[T]) PopN(n int) []T {
-	v := (*s)[len(*s)-n:]
-	(*s) = (*s)[:len(*s)-n]
-	return v
-}
-
-func (s *Stack[T]) Push(t ...T) {
-	*s = append(*s, t...)
-}
-
 func main() {
 	data := cmn.ReadFile("input.txt")
 	boxes, instructions, _ := strings.Cut(data, "\n\n")
 
 	blns := strings.Split(boxes, "\n")
 	colCount := len(strings.Fields(blns[len(blns)-1]))
-	stacks := make([]Stack[string], colCount)
-	stacks2 := make([]Stack[string], colCount)
+	stacks := make([]cmn.Stack[string], colCount)
+	stacks2 := make([]cmn.Stack[string], colCount)
 	for i := len(blns) - 2; i >= 0; i-- {
 		for c := 0; c < colCount; c++ {
 			if v := readCol(c, blns[i]); v != " " {
