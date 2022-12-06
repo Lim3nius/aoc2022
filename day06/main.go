@@ -17,21 +17,18 @@ func detectUnique(in []byte) bool {
 	return true
 }
 
+func detectFirstUniqueSeq(in string, slen int) int {
+	for i := 0; i < len(in); i++ {
+		if detectUnique([]byte(in[i : i+slen])) {
+			return i + slen
+		}
+	}
+	return -42
+}
+
 func main() {
 	ln := cmn.ReadLines("input.txt")[0]
 
-	for i := 0; i < len(ln); i++ {
-		if detectUnique([]byte(ln[i : i+4])) {
-			fmt.Printf("Part1 -> %d\n", i+4)
-			break
-		}
-	}
-
-	for i := 0; i < len(ln); i++ {
-		if detectUnique([]byte(ln[i : i+14])) {
-			fmt.Printf("Part2 -> %d\n", i+14)
-			break
-		}
-	}
-
+	fmt.Printf("Part1 -> %d\n", detectFirstUniqueSeq(ln, 4))
+	fmt.Printf("Part2 -> %d\n", detectFirstUniqueSeq(ln, 14))
 }
