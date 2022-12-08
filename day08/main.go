@@ -156,9 +156,7 @@ func main() {
 				vis += 1
 			}
 
-			if m := scenicScore(grid, r, c); m > maxScenic {
-				maxScenic = m
-			}
+			maxScenic = cmn.Max(scenicScore(grid, r, c), maxScenic)
 		}
 	}
 
