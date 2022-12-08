@@ -8,58 +8,31 @@ import (
 	cmn "github.com/Lim3nius/aoc2022/common"
 )
 
-func visibleRow(grid [][]int, treeR, treeC int) bool {
-	treeHeight := grid[treeR][treeC]
-	stop := len(grid[treeR])
-
-	left := func() bool {
-		for i := 0; i < treeC; i++ {
-			if grid[treeR][i] >= treeHeight {
-				return false
-			}
-		}
-		return true
-	}
-
-	right := func() bool {
-		for i := treeC + 1; i < stop; i++ {
-			if grid[treeR][i] >= treeHeight {
-				return false
-			}
-		}
-		return true
-	}
-
-	return left() || right()
-}
-
-func visibleCol(grid [][]int, treeR, treeC int) bool {
-	treeHeight := grid[treeR][treeC]
-	stop := len(grid)
-
-	top := func() bool {
-		for i := 0; i < treeR; i++ {
-			if grid[i][treeC] >= treeHeight {
-				return false
-			}
-		}
-		return true
-	}
-
-	bot := func() bool {
-		for i := treeR + 1; i < stop; i++ {
-			if grid[i][treeC] >= treeHeight {
-				return false
-			}
-		}
-		return true
-	}
-
-	return top() || bot()
-}
-
 func isVisible(grid [][]int, r, c int) bool {
-	return visibleCol(grid, r, c) || visibleRow(grid, r, c)
+	treeHeight := grid[r][c]
+
+	walkGrid := func(grid [][]int, rv, cv int, sr, sc int, fn func(int) bool) bool {
+		r, c := sr, sc
+
+		for 0 <= r && r < len(grid) &&
+			0 <= c && c < len(grid[r]) {
+			if !fn(grid[r][c]) {
+				return false
+			}
+
+			r += rv
+			c += cv
+		}
+		return true
+	}
+
+	cond := func(th int) bool { return th < treeHeight }
+	leftVis := walkGrid(grid, 0, -1, r, c-1, cond)
+	rightVis := walkGrid(grid, 0, 1, r, c+1, cond)
+	topVis := walkGrid(grid, -1, 0, r-1, c, cond)
+	botVis := walkGrid(grid, 1, 0, r+1, c, cond)
+
+	return leftVis || rightVis || topVis || botVis
 }
 
 func edgeTrees(grid [][]int) int {
@@ -69,73 +42,32 @@ func edgeTrees(grid [][]int) int {
 func scenicScore(grid [][]int, r, c int) int {
 	treeH := grid[r][c]
 
-	left := func() int {
-		t := 0
-		for i := c - 1; i >= 0; i-- {
-			if grid[r][i] < treeH {
-				t += 1
-			} else if grid[r][i] == treeH {
-				t += 1
-				break
+	walkGrid := func(rv, cv int, sr, sc int, fn func(int) bool) int {
+		r, c := sr, sc
+
+		acc := 0
+		for 0 <= r && r < len(grid) &&
+			0 <= c && c < len(grid[0]) {
+			if fn(grid[r][c]) {
+				acc += 1
 			} else {
-				t += 1
-				break
+				acc += 1
+				return acc
 			}
+
+			r += rv
+			c += cv
 		}
-		return t
+		return acc
 	}
 
-	right := func() int {
-		// fmt.Printf("%d %d\n", r, c)
-		t := 0
-		for i := c + 1; i < len(grid[r]); i++ {
-			if grid[r][i] < treeH {
-				t += 1
-			} else if grid[r][i] == treeH {
-				t += 1
-				break
-			} else {
-				t += 1
-				break
-			}
-		}
-		return t
-	}
+	cond := func(th int) bool { return th < treeH }
 
-	top := func() int {
-		t := 0
-		for i := r - 1; i >= 0; i-- {
-			if grid[i][c] < treeH {
-				t += 1
-			} else if grid[i][c] == treeH {
-				t += 1
-				break
-			} else {
-				t += 1
-				break
-			}
-		}
-		return t
-	}
-
-	bot := func() int {
-		t := 0
-		for i := r + 1; i < len(grid); i++ {
-			if grid[i][c] < treeH {
-				t += 1
-			} else if grid[i][c] == treeH {
-				t += 1
-				break
-			} else {
-				t += 1
-				break
-			}
-		}
-		return t
-	}
-
-	l, rr, t, b := left(), right(), top(), bot()
-	return l * rr * t * b
+	left := walkGrid(0, -1, r, c-1, cond)
+	right := walkGrid(0, 1, r, c+1, cond)
+	top := walkGrid(-1, 0, r-1, c, cond)
+	bot := walkGrid(1, 0, r+1, c, cond)
+	return left * right * top * bot
 }
 
 func main() {
@@ -155,7 +87,6 @@ func main() {
 			if isVisible(grid, r, c) {
 				vis += 1
 			}
-
 			maxScenic = cmn.Max(scenicScore(grid, r, c), maxScenic)
 		}
 	}
