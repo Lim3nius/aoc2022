@@ -79,50 +79,37 @@ func parseCmd(ln string) (vec, uint) {
 	return v, uint(cmn.Must(strconv.Atoi(l)))
 }
 
-func main() {
-	lns := cmn.ReadLines("input.txt")
-	headPos := &point{}
-	tailPos := &point{}
+func simulate(cmds []string, nodes int) map[int]map[int]int {
+	visited := map[int]map[int]int{}
+	end := nodes - 1
+	ropes := make([]*point, nodes)
+	for i := 0; i < nodes; i++ {
+		ropes[i] = &point{}
+	}
 
-	tailTrail := map[int]map[int]int{}
-
-	tailTrails := map[int]map[int]int{}
-
-	ropes := []*point{{
-		x: 0,
-		y: 0,
-	}}
-	endsC := 10
-	for _, cmd := range lns {
+	for _, cmd := range cmds {
 		v, l := parseCmd(cmd)
 		for x := 0; x < int(l); x++ {
-			headPos.Move(v)
-			tailPos.Follow(headPos)
-
-			if _, ok := tailTrail[tailPos.x]; !ok {
-				tailTrail[tailPos.x] = map[int]int{}
-			}
-			tailTrail[tailPos.x][tailPos.y] += 1
-
 			ropes[0].Move(v)
+
 			for i := 1; i < len(ropes); i++ {
 				ropes[i].Follow(ropes[i-1])
-
 			}
 
-			if len(ropes) < endsC && (ropes[len(ropes)-1].x != 0 || ropes[len(ropes)-1].y != 0) {
-				ropes = append(ropes, &point{x: 0, y: 0})
+			if _, ok := visited[ropes[end].x]; !ok {
+				visited[ropes[end].x] = map[int]int{}
 			}
-
-			if len(ropes) == 10 {
-				if _, ok := tailTrails[ropes[9].x]; !ok {
-					tailTrails[ropes[9].x] = map[int]int{}
-				}
-				tailTrails[ropes[9].x][ropes[9].y] += 1
-			}
-
+			visited[ropes[end].x][ropes[end].y] += 1
 		}
 	}
+	return visited
+}
+
+func main() {
+	lns := cmn.ReadLines("input.txt")
+
+	p1Visited := simulate(lns, 2)
+	p2Visited := simulate(lns, 10)
 
 	visits := func(m map[int]map[int]int) int {
 		acc := 0
@@ -136,6 +123,6 @@ func main() {
 		return acc
 	}
 
-	fmt.Printf("Part1 -> %d\n", visits(tailTrail))
-	fmt.Printf("Part2 -> %d\n", visits(tailTrails))
+	fmt.Printf("Part1 -> %d\n", visits(p1Visited))
+	fmt.Printf("Part2 -> %d\n", visits(p2Visited))
 }
