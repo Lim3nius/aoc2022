@@ -15,6 +15,7 @@ type monkey struct {
 	items     []int64
 	operation *operation
 	throwFn   func(int64) int64
+	divider   int64
 
 	inspectedItems int64
 }
@@ -23,7 +24,7 @@ func (m *monkey) acceptItem(i int64) {
 	m.items = append(m.items, i)
 }
 
-func (m *monkey) inspectItem(decrease func(int64) int64) (int64, int64, bool) {
+func (m *monkey) inspectItem(decrease func(int64) int64, lcm int64) (int64, int64, bool) {
 	if len(m.items) == 0 {
 		return 0, 0, false
 	}
@@ -37,6 +38,11 @@ func (m *monkey) inspectItem(decrease func(int64) int64) (int64, int64, bool) {
 	item = decrease(item)
 
 	m.inspectedItems++
+
+	// keep worry level in check
+	if item > lcm {
+		item = item % lcm
+	}
 
 	return m.throwFn(item), item, true
 }
@@ -113,6 +119,7 @@ func parseMonkey(matches []string) *monkey {
 		}
 		return nok
 	}
+	mon.divider = div
 
 	return mon
 }
@@ -120,6 +127,10 @@ func parseMonkey(matches []string) *monkey {
 func main() {
 	lns := cmn.ReadFile("input.txt")
 	monkeys := parseMonkeys(lns)
+	var lcm int64 = 1
+	for _, m := range monkeys {
+		lcm *= m.divider
+	}
 
 	// for i, m := range monkeys {
 	// 	fmt.Printf("M %d: %v\n", i, m.items)
@@ -128,7 +139,7 @@ func main() {
 	for i := 0; i < 20; i++ {
 		for _, m := range monkeys {
 			for {
-				dest, item, ok := m.inspectItem(func(x int64) int64 { return x / 3 })
+				dest, item, ok := m.inspectItem(func(x int64) int64 { return x / 3 }, lcm)
 				if !ok {
 					break
 				}
@@ -145,27 +156,20 @@ func main() {
 
 	fmt.Printf("Part1 -> %d\n", monkeys[0].inspectedItems*monkeys[1].inspectedItems)
 
-	// monkeys2 := parseMonkeys(lns)
-	// monkeys2[0].items = monkeys2[0].items[1:2]
-	// for _, m := range monkeys2[1:] {
-	// 	m.items = nil
-	// }
+	monkeys2 := parseMonkeys(lns)
+	for i := 0; i < 10_000; i++ {
+		for _, m := range monkeys2 {
+			for {
+				dest, item, ok := m.inspectItem(func(x int64) int64 { return x }, lcm)
+				if !ok {
+					break
+				}
 
-	// cycleDetect := []int64{}
-	// for i := 0; i < 20; i++ {
-	// 	for _, m := range monkeys2 {
-	// 		for {
-	// 			d, i, ok := m.inspectItem(func(x int64) int64 { return x })
-	// 			if !ok {
-	// 				break
-	// 			}
+				monkeys2[dest].acceptItem(item)
+			}
+		}
+	}
 
-	// 			fmt.Printf("%d\n", i)
-	// 			cycleDetect = append(cycleDetect, d)
-	// 			monkeys2[d].acceptItem(i)
-	// 		}
-	// 	}
-
-	// 	fmt.Printf("%d: %v\n", i, cycleDetect)
-	// }
+	slices.SortFunc(monkeys2, func(a, b *monkey) bool { return a.inspectedItems > b.inspectedItems })
+	fmt.Printf("Part2 -> %d\n", monkeys2[0].inspectedItems*monkeys2[1].inspectedItems)
 }
